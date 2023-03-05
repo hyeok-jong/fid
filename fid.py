@@ -11,7 +11,7 @@ import munch
 
 import numpy as np
 import torch
-import torchvision.transforms as TF
+import torchvision.transforms as transforms
 from PIL import Image
 from scipy import linalg
 from torch.nn.functional import adaptive_avg_pool2d
@@ -37,6 +37,8 @@ class ImagePathDataset(torch.utils.data.Dataset):
     def __init__(self, files, transforms=None):
         '''
         file : paths for images
+        Note that in inception.py the inputs are transformed [0, 1] to [-1, 1]
+        So, here, input images should be in [0, 1]
         '''
         self.files = files
         self.transforms = transforms
@@ -141,8 +143,16 @@ def get_activations(files, model, batch_size=50, dims=2048, device='cpu',
         print(('Warning: batch size is bigger than the data size. '
                'Setting batch size to data size'))
         batch_size = len(files)
+    
+    # ToTensor(Image) : -> [0, 1]
+    # https://github.com/mseitzer/pytorch-fid/issues/3
+    transformations = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(mean = [0.485, 0.456, 0.406], std = [0.229, 0.224, 0.225]), 
+        ])
 
-    dataset = ImagePathDataset(files, transforms=TF.ToTensor())
+    dataset = ImagePathDataset(files, transforms = transformations)
+    
     dataloader = torch.utils.data.DataLoader(dataset,
                                              batch_size=batch_size,
                                              shuffle=False,
