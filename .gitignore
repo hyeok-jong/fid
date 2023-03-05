@@ -1,0 +1,7 @@
+
+cifar-10-python.tar.gz
+
+/cifar10*
+/cifar-10-batches-py
+/__pycache__
+/np_saves
